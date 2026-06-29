@@ -1,0 +1,10 @@
+# Jekyll 站点配置
+title: 文案生成器 — Emo · 治愈 · 收藏
+description: AI 驱动的私人文案素材库，支持 Emo 伤感 / 积极治愈两种风格
+lang: zh-CN
+exclude:
+  - .gitignore
+  - README.md
+  - generate_marx_review.py
+  - ocr_image.py
+  - "~$*"
