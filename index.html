@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文案生成器 — Emo · 治愈 · 收藏</title>
+<style>
+/* ============ CSS Variables & Reset ============ */
+:root {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #1e1e1e;
+  --bg-hover: #252525;
+  --bg-input: #141414;
+  --border: #2a2a2a;
+  --border-active: #444;
+  --text-primary: #e8e8e8;
+  --text-secondary: #999;
+  --text-muted: #666;
+  --accent-emo: #8b7e74;
+  --accent-emo-light: #b8a99a;
+  --accent-positive: #7a9f7e;
+  --accent-positive-light: #a3c4a7;
+  --accent-gold: #c9a96e;
+  --accent-gold-light: #e0c78a;
+  --danger: #a05252;
+  --danger-light: #c47070;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition: 0.2s ease;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ============ Layout ============ */
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 24px 40px;
+}
+
+/* ============ Header ============ */
+.app-header {
+  text-align: center;
+  padding: 28px 0 8px;
+}
+.app-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--accent-emo-light), var(--accent-positive-light), var(--accent-gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.app-header .subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+/* ============ Top Nav Tabs ============ */
+.nav-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 20px 0 0;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+.nav-tab {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all var(--transition);
+  background: transparent;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  position: relative;
+}
+.nav-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.nav-tab.active { color: #fff; background: var(--bg-card); box-shadow: var(--shadow); }
+.nav-tab .badge {
+  display: inline-block;
+  background: var(--accent-gold);
+  color: #000;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.nav-tab.emo-tab.active { border-left: 3px solid var(--accent-emo); }
+.nav-tab.positive-tab.active { border-left: 3px solid var(--accent-positive); }
+.nav-tab.fav-tab.active { border-left: 3px solid var(--accent-gold); }
+
+/* ============ Config Panel (universal, always visible) ============ */
+.config-panel {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+}
+.config-panel.collapsed { display: none; }
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.config-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.config-item.col-span-2 { grid-column: span 2; }
+.config-item { display: flex; flex-direction: column; gap: 5px; }
+.config-item label {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+.config-item input[type="text"] {
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border var(--transition);
+}
+.config-item input[type="text"]:focus {
+  border-color: var(--border-active);
+}
+.config-item select {
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+.config-item select:focus {
+  border-color: var(--border-active);
+}
+.config-item input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.config-item input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  cursor: pointer;
+  border: 2px solid var(--bg-primary);
+}
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ============ Prompt Preview ============ */
+.prompt-preview-box {
+  margin-top: 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  max-height: 160px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+.prompt-preview-box strong {
+  color: var(--accent-gold);
+  font-weight: 500;
+}
+
+/* ============ Generate Button ============ */
+.generate-section {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.btn-generate {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all var(--transition);
+  color: #fff;
+}
+.btn-generate.emo-mode {
+  background: linear-gradient(135deg, #4a3f38, #6b5d52);
+}
+.btn-generate.emo-mode:hover { background: linear-gradient(135deg, #5a4f48, #7b6d62); transform: translateY(-1px); }
+.btn-generate.positive-mode {
+  background: linear-gradient(135deg, #3a4f3f, #4f6b55);
+}
+.btn-generate.positive-mode:hover { background: linear-gradient(135deg, #4a5f4f, #5f7b65); transform: translateY(-1px); }
+.btn-generate:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-generating {
+  animation: pulse 1.5s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ============ Results Area ============ */
+.results-section {
+  margin-top: 20px;
+}
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.results-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.results-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ============ Copy Cards ============ */
+.copy-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 10px;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.copy-card:hover { border-color: var(--border-active); }
+.copy-card.emo-card { border-left: 3px solid var(--accent-emo); }
+.copy-card.positive-card { border-left: 3px solid var(--accent-positive); }
+.copy-card .card-text {
+  font-size: 16px;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.copy-card .card-actions {
+  display: flex;
+  gap: 8px;
+}
+.copy-card .card-actions button {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all var(--transition);
+  letter-spacing: 0.5px;
+}
+.copy-card .card-actions button:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-active);
+}
+.copy-card .card-actions button.fav-btn.favorited {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  background: rgba(201, 169, 110, 0.08);
+}
+.copy-card .card-actions button.copy-btn.copied {
+  border-color: var(--accent-positive);
+  color: var(--accent-positive);
+  background: rgba(122, 159, 126, 0.08);
+}
+.copy-card .card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.copy-card .card-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.copy-card .card-tag:hover {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+.copy-card .card-mode-label {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 1px;
+}
+.copy-card .card-mode-label.emo-label {
+  background: rgba(139, 126, 116, 0.15);
+  color: var(--accent-emo-light);
+}
+.copy-card .card-mode-label.positive-label {
+  background: rgba(122, 159, 126, 0.15);
+  color: var(--accent-positive-light);
+}
+
+/* ============ Empty State ============ */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+.empty-state p {
+  font-size: 14px;
+  line-height: 1.8;
+}
+.empty-state .hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* ============ Toast ============ */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards;
+  white-space: nowrap;
+  background: var(--bg-card);
+  border: 1px solid var(--border-active);
+  color: var(--text-primary);
+}
+.toast.success { border-color: var(--accent-positive); }
+.toast.warning { border-color: var(--accent-gold); }
+.toast.error { border-color: var(--danger); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ============ Favorites Filter ============ */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all var(--transition);
+}
+.filter-btn:hover { border-color: var(--border-active); color: var(--text-primary); }
+.filter-btn.active {
+  background: var(--accent-gold);
+  color: #000;
+  border-color: var(--accent-gold);
+  font-weight: 600;
+}
+
+/* ============ Scrollbar ============ */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-active); }
+
+/* ============ Responsive ============ */
+@media (max-width: 640px) {
+  .app-container { padding: 12px 12px 32px; }
+  .config-grid { grid-template-columns: 1fr; }
+  .nav-tab { font-size: 13px; padding: 10px 8px; }
+  .app-header h1 { font-size: 22px; }
+  .copy-card .card-text { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Header -->
+  <header class="app-header">
+    <h1>✧ 文案生成器 ✧</h1>
+    <p class="subtitle">Emo · 治愈 · 收藏 — 你的私人文案素材库</p>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs" id="navTabs">
+    <button class="nav-tab emo-tab active" data-tab="emo">🌙 Emo 伤感</button>
+    <button class="nav-tab positive-tab" data-tab="positive">☀️ 积极治愈</button>
+    <button class="nav-tab fav-tab" data-tab="favorites">📌 我的收藏 <span class="badge" id="favCount">0</span></button>
+  </nav>
+
+  <!-- Universal Config Panel -->
+  <section class="config-panel" id="configPanel">
+    <div class="config-header">
+      <h3>⚙️ 提示词控制面板</h3>
+      <span style="font-size:11px;color:var(--text-muted);" id="currentModeLabel">当前模式：Emo 伤感</span>
+    </div>
+    <div class="config-grid">
+      <div class="config-item">
+        <label>🔑 主题关键词</label>
+        <input type="text" id="keyword" placeholder="示例：雨天、考研、离别、晚风、上岸…" maxlength="30">
+      </div>
+      <div class="config-item">
+        <label>📏 文案长度</label>
+        <select id="textLength">
+          <option value="short">短句（≤15 字）</option>
+          <option value="medium" selected>中等朋友圈文案（20-35 字）</option>
+          <option value="long">长随笔（50-80 字）</option>
+        </select>
+      </div>
+      <div class="config-item col-span-2">
+        <label>🎚️ 情绪浓度</label>
+        <input type="range" id="emotion" min="0" max="100" value="50" step="10">
+        <div class="range-labels"><span>淡氛围感</span><span>中等</span><span>浓烈走心</span></div>
+      </div>
+    </div>
+
+    <!-- Prompt Preview -->
+    <div class="prompt-preview-box" id="promptPreview">
+      <em>调整上方参数，此处将实时显示拼接完成的完整提示词…</em>
+    </div>
+
+    <!-- Generate -->
+    <div class="generate-section">
+      <button class="btn-generate emo-mode" id="btnGenerate" onclick="app.generate()">✨ 生成文案</button>
+    </div>
+  </section>
+
+  <!-- Results / Content Area -->
+  <section class="results-section" id="resultsContainer">
+    <div class="empty-state">
+      <div class="empty-icon">✍️</div>
+      <p>输入关键词，点击生成<br>AI 将为你创作专属文案</p>
+      <p class="hint">支持 Emo 伤感 / 积极治愈 两种风格</p>
+    </div>
+  </section>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+'use strict';
+
+/**
+ * ============================================================
+ * 文案生成器 — 完整前端应用
+ * 包含：提示词工程系统 / 本地存储收藏 / Mock AI 生成
+ * ============================================================
+ */
+
+// ==================== 类型定义（文档用） ====================
+/**
+ * @typedef {'emo'|'positive'} CopyMode
+ * @typedef {'short'|'medium'|'long'} CopyLength
+ * @typedef {'light'|'medium'|'intense'} EmotionLevel
+ *
+ * @typedef {Object} CopyConfig
+ * @property {string} keyword
+ * @property {CopyLength} length
+ * @property {EmotionLevel} emotion
+ * @property {CopyMode} mode
+ *
+ * @typedef {Object} CopyItem
+ * @property {string} id
+ * @property {string} text
+ * @property {CopyMode} mode
+ * @property {CopyConfig} config
+ * @property {number} timestamp
+ */
+
+// ==================== 常量 ====================
+const STORAGE_KEY = 'copywriter_favorites';
+const MODE_EMO = 'emo';
+const MODE_POSITIVE = 'positive';
+
+/** 长度映射 */
+const LENGTH_MAP = {
+  short: { label: '短句', chars: '≤15字', constraint: '每条文案15字以内' },
+  medium: { label: '中等', chars: '20-35字', constraint: '每条文案20-35字' },
+  long: { label: '长随笔', chars: '50-80字', constraint: '每条文案50-80字' },
+};
+
+/** 情绪映射 */
+const EMOTION_MAP = {
+  light: '清淡含蓄，克制的氛围感，文字留白，不言透',
+  medium: '情绪适中，有感触但不浓烈',
+  intense: '浓烈走心，情绪饱满，文字有力量，直击人心',
+};
+
+/**
+ * ============================================================
+ * 四层提示词模板系统
+ * ============================================================
+ */
+
+/** 第一层：角色底层模板（固定，区分板块） */
+const ROLE_TEMPLATES = {
+  emo: `你是一位专业文艺伤感短句创作者。
+创作风格：文字克制有留白，侧重画面氛围感，不狗血矫情。
+使用意象隐喻代替直白悲伤表达，短句适配社交平台（朋友圈、个性签名）。
+文风参考：王家卫电影独白、村上春树短句、朦胧诗派。`,
+
+  positive: `你是一位生活化治愈文案创作者。
+创作风格：文字温柔接地气，励志但无空洞鸡汤。
+聚焦日常微小美好，适合低谷时自我安抚，短句干净有力量。
+文风参考：是枝裕和电影台词、小林一茶俳句、轻生活散文。`,
+};
+
+/** 第三层：输出强制约束模板（全局统一） */
+const OUTPUT_CONSTRAINTS = `【输出规则 — 必须严格遵守】
+1. 只输出文案正文，禁止任何额外解释、标题、开场白、分段说明、编号前缀；
+2. 单次生成恰好5条独立文案，每条单独一行，行间用换行符分隔；
+3. 5条文案语义角度互不重复，核心意象不撞款；
+4. 禁止使用繁杂特殊符号、颜文字、网络烂梗；
+5. 严格遵守上面设置的篇幅、情绪、场景要求；
+6. 禁止输出"1. ""第X条"等序号前缀，直接输出文案内容本身。`;
+
+/** 第四层：兜底校正指令 */
+const FALLBACK_CORRECTION = `【兜底规则】如果用户未提供主题关键词或关键词无意义，自动随机选取该风格对应的日常场景进行创作（如：雨天、地铁、失眠、便利店、黄昏、初雪、候车室、深夜厨房等）。`;
+
+/**
+ * 构建完整提示词（四层拼接）
+ * @param {CopyConfig} config
+ * @returns {string}
+ */
+function buildFullPrompt(config) {
+  const keyword = config.keyword.trim() || '（自动选取日常场景）';
+  const lengthInfo = LENGTH_MAP[config.length];
+  const emotionInfo = getEmotionLabel(config.emotion);
+
+  // 第一层：角色定位
+  const layer1 = ROLE_TEMPLATES[config.mode];
+
+  // 第二层：用户动态变量
+  const layer2 = [
+    `---`,
+    `【创作参数】`,
+    `主题关键词：${keyword}`,
+    `篇幅约束：${lengthInfo.label}文案（${lengthInfo.chars}），${lengthInfo.constraint}`,
+    `情绪强度：${emotionInfo}`,
+    `使用场景：适合朋友圈配图、个性签名、摘抄短句`,
+    `风格基调：${config.mode === 'emo' ? '伤感文艺，克制留白，氛围感叙事' : '温暖治愈，生活化表达，积极但不鸡汤'}`,
+    `---`,
+  ].join('\n');
+
+  // 第三层 + 第四层
+  const layer3 = OUTPUT_CONSTRAINTS;
+  const layer4 = FALLBACK_CORRECTION;
+
+  // 模式专属附加强约束
+  const modeConstraint = config.mode === 'emo'
+    ? `\n【模式专属约束】禁止出现阳光、励志、乐观、希望、加油等积极词汇；保持克制哀伤的氛围底色。`
+    : `\n【模式专属约束】禁止出现绝望、颓废、放弃、黑暗、无意义等消极词汇；文字必须有温暖底色和向上的力量。`;
+
+  return [layer1, layer2, layer3, modeConstraint, layer4].join('\n');
+}
+
+/**
+ * 根据滑块值获取情绪标签
+ * @param {number} val 0-100
+ * @returns {string}
+ */
+function getEmotionLabel(val) {
+  if (val <= 33) return EMOTION_MAP.light;
+  if (val <= 66) return EMOTION_MAP.medium;
+  return EMOTION_MAP.intense;
+}
+
+/**
+ * 根据滑块值获取情绪等级
+ * @param {number} val 0-100
+ * @returns {EmotionLevel}
+ */
+function getEmotionLevel(val) {
+  if (val <= 33) return 'light';
+  if (val <= 66) return 'medium';
+  return 'intense';
+}
+
+// ==================== Mock AI 生成器 ====================
+/**
+ * 模拟 AI 生成文案（基于关键词 + 参数动态组合）
+ * 实际部署时替换为 fetch('/api/generate', { body: JSON.stringify({ prompt }) })
+ * @param {CopyConfig} config
+ * @returns {Promise<string[]>} 5条文案
+ */
+async function mockGenerate(config) {
+  // 模拟网络延迟 0.8-1.8 秒
+  const delay = 800 + Math.random() * 1000;
+  await new Promise(r => setTimeout(r, delay));
+
+  const kw = config.keyword.trim() || getRandomScene();
+  const isEmo = config.mode === MODE_EMO;
+  const length = config.length;
+  const intensity = getEmotionLevel(config.emotion);
+
+  // 根据关键词和模式生成5条不同角度的文案
+  return generateCopyBatch(kw, isEmo, length, intensity);
+}
+
+/** 随机场景词 */
+function getRandomScene() {
+  const scenes = ['雨天', '地铁', '失眠', '便利店', '黄昏', '初雪', '候车室', '深夜厨房', '秋风', '窗台', '旧书店', '十字路口', '凌晨四点', '空荡的房间', '街角咖啡店'];
+  return scenes[Math.floor(Math.random() * scenes.length)];
+}
+
+/**
+ * 批量生成文案
+ */
+function generateCopyBatch(keyword, isEmo, length, intensity) {
+  const results = [];
+  // 5个不同角度
+  const angles = isEmo
+    ? ['意象隐喻', '场景白描', '情感独白', '物是人非', '时间流逝']
+    : ['日常小确幸', '自我鼓励', '温暖人际关系', '自然疗愈', '微小成长'];
+
+  const usedPatterns = new Set();
+
+  for (let i = 0; i < 5; i++) {
+    const angle = angles[i];
+    let text = '';
+
+    // 尝试生成不重复的文案
+    let attempts = 0;
+    do {
+      text = buildOneCopy(keyword, angle, isEmo, length, intensity);
+      attempts++;
+    } while (usedPatterns.has(text.substring(0, 8)) && attempts < 5);
+
+    usedPatterns.add(text.substring(0, 8));
+    results.push(text);
+  }
+
+  return results;
+}
+
+/**
+ * 构建单条文案
+ */
+function buildOneCopy(keyword, angle, isEmo, length, intensity) {
+  // Emo 文案模板池
+  const emoTemplates = {
+    '意象隐喻': [
+      `${keyword}像一场没有预告的告别，${randomEmoEnd('意象', keyword, intensity)}`,
+      `那些藏在${keyword}里的心事，${randomEmoEnd('意象', keyword, intensity)}`,
+      `${keyword}是这座城市唯一的背景音，${randomEmoEnd('意象', keyword, intensity)}`,
+      `把情绪揉进${keyword}里，${randomEmoEnd('意象', keyword, intensity)}`,
+      `风把${keyword}吹散以后，${randomEmoEnd('意象', keyword, intensity)}`,
+    ],
+    '场景白描': [
+      `${keyword}的夜晚，街灯把影子拉得很长，${randomEmoEnd('场景', keyword, intensity)}`,
+      `凌晨三点，${keyword}的声音格外清晰，${randomEmoEnd('场景', keyword, intensity)}`,
+      `窗外的${keyword}停了又下，${randomEmoEnd('场景', keyword, intensity)}`,
+      `在${keyword}里等一班永远不会来的车，${randomEmoEnd('场景', keyword, intensity)}`,
+      `${keyword}打在玻璃上，模糊了整座城市，${randomEmoEnd('场景', keyword, intensity)}`,
+    ],
+    '情感独白': [
+      `有些话只能在${keyword}里说给自己听，${randomEmoEnd('独白', keyword, intensity)}`,
+      `原来最安静的时刻不是没人说话，而是${keyword}的时候，${randomEmoEnd('独白', keyword, intensity)}`,
+      `我们都在${keyword}里学会了沉默，${randomEmoEnd('独白', keyword, intensity)}`,
+      `不是不喜欢阳光，只是${keyword}更配我现在的心情，${randomEmoEnd('独白', keyword, intensity)}`,
+      `后来我才明白，${keyword}的时候最想你，${randomEmoEnd('独白', keyword, intensity)}`,
+    ],
+    '物是人非': [
+      `上一次${keyword}的时候，身边还是不同的人，${randomEmoEnd('物是', keyword, intensity)}`,
+      `${keyword}还是那个${keyword}，只是有些东西不一样了，${randomEmoEnd('物是', keyword, intensity)}`,
+      `那年的${keyword}里说过的话，现在都成了哑谜，${randomEmoEnd('物是', keyword, intensity)}`,
+      `同一个城市的${keyword}，再也淋不到同一个人，${randomEmoEnd('物是', keyword, intensity)}`,
+      `${keyword}把记忆洗了一遍又一遍，模糊但还在，${randomEmoEnd('物是', keyword, intensity)}`,
+    ],
+    '时间流逝': [
+      `${keyword}来了又走，像你来过又离开，${randomEmoEnd('时间', keyword, intensity)}`,
+      `时间在${keyword}里走得特别慢，回忆却跑得飞快，${randomEmoEnd('时间', keyword, intensity)}`,
+      `等这一阵${keyword}过去，就又是新的一天了，${randomEmoEnd('时间', keyword, intensity)}`,
+      `${keyword}不会一直下，但有些情绪会，${randomEmoEnd('时间', keyword, intensity)}`,
+      `从前觉得${keyword}很长，现在觉得什么都没来得及，${randomEmoEnd('时间', keyword, intensity)}`,
+    ],
+  };
+
+  // 积极文案模板池
+  const positiveTemplates = {
+    '日常小确幸': [
+      `${keyword}的时候，发现一件很小但让自己开心的事，${randomPositiveEnd('确幸', keyword, intensity)}`,
+      `今天${keyword}，但阳光还是找到了我的窗台，${randomPositiveEnd('确幸', keyword, intensity)}`,
+      `${keyword}的间隙里，闻到邻居家飘来的饭菜香，${randomPositiveEnd('确幸', keyword, intensity)}`,
+      `在平凡的日子里，${keyword}也可以是很温柔的背景，${randomPositiveEnd('确幸', keyword, intensity)}`,
+      `停下来感受${keyword}，原来生活一直有温度，${randomPositiveEnd('确幸', keyword, intensity)}`,
+    ],
+    '自我鼓励': [
+      `${keyword}考验的从来不是别人，而是自己，${randomPositiveEnd('鼓励', keyword, intensity)}`,
+      `允许自己在${keyword}里慢一点，也是一种勇气，${randomPositiveEnd('鼓励', keyword, intensity)}`,
+      `今天的${keyword}，是为了明天更好的自己铺路，${randomPositiveEnd('鼓励', keyword, intensity)}`,
+      `不用急着穿过${keyword}，你已经在路上了，${randomPositiveEnd('鼓励', keyword, intensity)}`,
+      `就算${keyword}，也要记得你已经走了这么远，${randomPositiveEnd('鼓励', keyword, intensity)}`,
+    ],
+    '温暖人际关系': [
+      `${keyword}的时候收到一条消息，突然觉得被惦记着，${randomPositiveEnd('人际', keyword, intensity)}`,
+      `朋友说${keyword}也要好好吃饭，把这句话记在心里，${randomPositiveEnd('人际', keyword, intensity)}`,
+      `有人愿意在${keyword}里等你，是这个世界上最温柔的事，${randomPositiveEnd('人际', keyword, intensity)}`,
+      `${keyword}的时候想起妈妈说过的话，心就暖了，${randomPositiveEnd('人际', keyword, intensity)}`,
+      `哪怕只有一个人理解你在${keyword}里的坚持，也足够了，${randomPositiveEnd('人际', keyword, intensity)}`,
+    ],
+    '自然疗愈': [
+      `${keyword}过后，空气里有泥土和草的味道，${randomPositiveEnd('自然', keyword, intensity)}`,
+      `大自然用${keyword}告诉我们，一切都会重新生长，${randomPositiveEnd('自然', keyword, intensity)}`,
+      `窗外的${keyword}洗过树叶，绿得让心静下来，${randomPositiveEnd('自然', keyword, intensity)}`,
+      `${keyword}里的鸟鸣声比平时更好听，${randomPositiveEnd('自然', keyword, intensity)}`,
+      `把${keyword}想象成天空在帮大地洗去疲惫，${randomPositiveEnd('自然', keyword, intensity)}`,
+    ],
+    '微小成长': [
+      `回头看，那些${keyword}的日子都成了现在的勋章，${randomPositiveEnd('成长', keyword, intensity)}`,
+      `每一次${keyword}都在悄悄改变着什么，别着急，${randomPositiveEnd('成长', keyword, intensity)}`,
+      `今天比昨天更懂了一点${keyword}的意义，${randomPositiveEnd('成长', keyword, intensity)}`,
+      `${keyword}不是阻碍，是另一种方向的指引，${randomPositiveEnd('成长', keyword, intensity)}`,
+      `就算只往前走了一小步，${keyword}都会为你让路，${randomPositiveEnd('成长', keyword, intensity)}`,
+    ],
+  };
+
+  const templates = isEmo ? emoTemplates : positiveTemplates;
+  const pool = templates[angle] || Object.values(templates)[0];
+  const base = pool[Math.floor(Math.random() * pool.length)];
+
+  // 根据长度裁剪
+  return trimToLength(base, length);
+}
+
+/**
+ * Emo 结尾词库
+ */
+function randomEmoEnd(angle, keyword, intensity) {
+  const lightEnds = [
+    '大概只有风知道。',
+    '说不清也不必说清。',
+    '就让它留在那里吧。',
+    '像什么都没发生。',
+    '安静也是一种回答。',
+    '没有答案也是一种答案。',
+    '都成了背景。',
+  ];
+  const intenseEnds = [
+    '那种空，比什么都重。',
+    '想念是会呼吸的痛。',
+    '每一个字都像刀子。',
+    '原来孤独是有声音的。',
+    '比告别更漫长的，是遗忘。',
+    '有些伤口时间也填不平。',
+    '假装没事，是最累的事。',
+  ];
+
+  const pool = intensity === 'light' ? lightEnds : intensity === 'intense' ? intenseEnds : [...lightEnds, ...intenseEnds];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/**
+ * 积极结尾词库
+ */
+function randomPositiveEnd(angle, keyword, intensity) {
+  const lightEnds = [
+    '这样就很好。',
+    '今天也辛苦了。',
+    '慢慢来，不急。',
+    '都是最好的安排。',
+    '总会好起来的。',
+    '记得抱抱自己。',
+  ];
+  const intenseEnds = [
+    '你比你想象中更强大！',
+    '每一天都是新的开始！',
+    '这就是成长的意义啊！',
+    '你的努力一定会发光！',
+    '未来会因为今天的你而感谢你！',
+    '没有什么能阻挡你！',
+  ];
+
+  const pool = intensity === 'light' ? lightEnds : intensity === 'intense' ? intenseEnds : [...lightEnds, ...intenseEnds];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/**
+ * 按长度裁剪文案
+ */
+function trimToLength(text, length) {
+  if (length === 'short') {
+    // 截取15字以内
+    if (text.length <= 15) return text;
+    // 尝试在标点处断开
+    const truncated = text.substring(0, 15);
+    const lastPunct = Math.max(truncated.lastIndexOf('，'), truncated.lastIndexOf('。'), truncated.lastIndexOf('、'));
+    if (lastPunct > 5) return truncated.substring(0, lastPunct);
+    return truncated + '…';
+  }
+  if (length === 'medium') {
+    // 保持20-35字
+    if (text.length <= 35) return text;
+    const truncated = text.substring(0, 35);
+    const lastPunct = Math.max(truncated.lastIndexOf('。'), truncated.lastIndexOf('，'));
+    if (lastPunct > 15) return truncated.substring(0, lastPunct + 1);
+    return truncated;
+  }
+  // long: 50-80字，模板本身可能不够长，补充描述
+  if (text.length < 50) {
+    const extras = [
+      ` 那些细碎的感受像${keyword.includes('雨') ? '雨滴' : '碎片'}一样落在心里，轻轻重重，渐渐汇成了此刻的全部情绪。`,
+      ` 有时候我们需要停下来，认真地感受一下这些细微的变化，它们正在构成我们生命里最重要的部分。`,
+      ` 时间在流逝，但这一刻的感受会一直留在这里，成为未来某一天回望时的温暖坐标。`,
+    ];
+    return text + extras[Math.floor(Math.random() * extras.length)];
+  }
+  return text;
+}
+
+// ==================== 本地存储管理 ====================
+const StorageManager = {
+  /**
+   * 获取全部收藏
+   * @returns {CopyItem[]}
+   */
+  getAll() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  /**
+   * 保存全部收藏
+   * @param {CopyItem[]} items
+   */
+  saveAll(items) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      showToast('存储空间不足，请清理部分收藏', 'error');
+    }
+  },
+
+  /**
+   * 添加收藏
+   * @param {CopyItem} item
+   */
+  add(item) {
+    const items = this.getAll();
+    // 去重
+    if (!items.find(i => i.id === item.id)) {
+      items.unshift(item); // 最新收藏放最前
+      this.saveAll(items);
+    }
+  },
+
+  /**
+   * 移除收藏
+   * @param {string} id
+   */
+  remove(id) {
+    const items = this.getAll().filter(i => i.id !== id);
+    this.saveAll(items);
+  },
+
+  /**
+   * 检查是否已收藏
+   * @param {string} id
+   * @returns {boolean}
+   */
+  isFavorited(id) {
+    return this.getAll().some(i => i.id === id);
+  },
+
+  /**
+   * 获取数量
+   * @returns {number}
+   */
+  count() {
+    return this.getAll().length;
+  },
+
+  /**
+   * 按模式筛选
+   * @param {CopyMode|'all'} mode
+   * @returns {CopyItem[]}
+   */
+  filterByMode(mode) {
+    if (mode === 'all') return this.getAll();
+    return this.getAll().filter(i => i.config.mode === mode);
+  },
+};
+
+// ==================== 应用主控制器 ====================
+const app = {
+  /** 当前激活的标签页 */
+  currentTab: 'emo',
+
+  /** 当前生成的结果（用于收藏） */
+  currentResults: [],
+
+  /** 收藏列表当前筛选 */
+  favFilter: 'all',
+
+  /**
+   * 初始化
+   */
+  init() {
+    this.bindNavTabs();
+    this.bindConfigInputs();
+    this.updatePromptPreview();
+    this.updateFavCount();
+    this.renderEmoTab();
+  },
+
+  /**
+   * 获取当前配置
+   * @returns {CopyConfig}
+   */
+  getConfig() {
+    const keyword = document.getElementById('keyword').value.trim();
+    const length = document.getElementById('textLength').value;
+    const emotionVal = parseInt(document.getElementById('emotion').value);
+    return {
+      keyword,
+      length,
+      emotion: getEmotionLevel(emotionVal),
+      mode: this.currentTab === 'favorites' ? MODE_EMO : this.currentTab,
+    };
+  },
+
+  /**
+   * 绑定导航标签切换
+   */
+  bindNavTabs() {
+    document.getElementById('navTabs').addEventListener('click', (e) => {
+      const tab = e.target.closest('.nav-tab');
+      if (!tab) return;
+      const tabName = tab.dataset.tab;
+
+      // 更新 active
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      this.currentTab = tabName;
+      this.switchTab(tabName);
+    });
+  },
+
+  /**
+   * 切换标签页
+   */
+  switchTab(tabName) {
+    const configPanel = document.getElementById('configPanel');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const btnGenerate = document.getElementById('btnGenerate');
+    const modeLabel = document.getElementById('currentModeLabel');
+
+    if (tabName === 'favorites') {
+      // 收藏页：隐藏配置面板 + 生成按钮
+      configPanel.classList.add('collapsed');
+      btnGenerate.style.display = 'none';
+      this.renderFavoritesTab();
+    } else {
+      // Emo / 积极页：显示配置面板
+      configPanel.classList.remove('collapsed');
+      btnGenerate.style.display = '';
+      modeLabel.textContent = tabName === 'emo' ? '当前模式：Emo 伤感' : '当前模式：积极治愈';
+
+      // 更新生成按钮样式
+      btnGenerate.classList.remove('emo-mode', 'positive-mode');
+      btnGenerate.classList.add(tabName === 'emo' ? 'emo-mode' : 'positive-mode');
+      btnGenerate.textContent = '✨ 生成文案';
+
+      // 清空之前的结果
+      this.currentResults = [];
+      resultsContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">${tabName === 'emo' ? '🌙' : '☀️'}</div>
+          <p>输入关键词，点击生成<br>AI 将为你创作${tabName === 'emo' ? 'Emo 伤感' : '积极治愈'}文案</p>
+        </div>`;
+
+      this.updatePromptPreview();
+    }
+  },
+
+  /**
+   * 绑定配置区输入事件
+   */
+  bindConfigInputs() {
+    const inputs = ['keyword', 'textLength', 'emotion'];
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => this.updatePromptPreview());
+      el.addEventListener('change', () => this.updatePromptPreview());
+    });
+  },
+
+  /**
+   * 更新提示词预览
+   */
+  updatePromptPreview() {
+    const config = this.getConfig();
+    const prompt = buildFullPrompt(config);
+    const previewEl = document.getElementById('promptPreview');
+
+    // 高亮关键参数
+    const highlighted = prompt
+      .replace(/【(.+?)】/g, '<strong>【$1】</strong>')
+      .replace(/---/g, '<hr style="border-color:#2a2a2a;margin:4px 0">');
+
+    previewEl.innerHTML = highlighted;
+    previewEl.scrollTop = 0;
+  },
+
+  /**
+   * 生成文案
+   */
+  async generate() {
+    const btn = document.getElementById('btnGenerate');
+    const config = this.getConfig();
+
+    // 输入校验
+    if (!config.keyword && this.currentTab !== 'favorites') {
+      // 允许空关键词，使用随机场景
+    }
+
+    // 按钮进入 loading
+    btn.disabled = true;
+    btn.textContent = '⏳ 正在生成…';
+    btn.classList.add('btn-generating');
+
+    try {
+      const results = await mockGenerate(config);
+      this.currentResults = results.map((text, i) => ({
+        id: generateId(),
+        text,
+        mode: config.mode,
+        config: { ...config },
+        timestamp: Date.now() + i,
+      }));
+      this.renderResults(this.currentResults);
+      showToast('生成完成！5 条文案已就绪 ✨', 'success');
+    } catch (err) {
+      console.error('生成失败:', err);
+      showToast('生成失败，请调整参数后重试', 'error');
+      // 简易排查指引
+      const resultsContainer = document.getElementById('resultsContainer');
+      resultsContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <p>生成失败，请尝试以下排查：</p>
+          <p class="hint">1. 检查关键词是否包含特殊字符<br>2. 尝试更换一个更通用的关键词<br>3. 刷新页面后重试</p>
+        </div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✨ 生成文案';
+      btn.classList.remove('btn-generating');
+    }
+  },
+
+  /**
+   * 渲染生成结果
+   * @param {CopyItem[]} items
+   */
+  renderResults(items) {
+    const container = document.getElementById('resultsContainer');
+    const isEmo = this.currentTab === MODE_EMO;
+
+    if (!items.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>暂无生成结果</p>
+        </div>`;
+      return;
+    }
+
+    const cards = items.map(item => {
+      const isFav = StorageManager.isFavorited(item.id);
+      return `
+        <div class="copy-card ${isEmo ? 'emo-card' : 'positive-card'}">
+          <span class="card-mode-label ${isEmo ? 'emo-label' : 'positive-label'}">${isEmo ? 'Emo' : '治愈'}</span>
+          <div class="card-text">${escapeHtml(item.text)}</div>
+          <div class="card-actions">
+            <button class="copy-btn" data-id="${item.id}" onclick="app.copyText('${item.id}')">
+              📋 一键复制
+            </button>
+            <button class="fav-btn ${isFav ? 'favorited' : ''}" data-id="${item.id}" onclick="app.toggleFavorite('${item.id}')">
+              ${isFav ? '★ 已收藏' : '☆ 收藏'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="results-header">
+        <h3>📝 生成结果</h3>
+        <span class="results-count">共 ${items.length} 条</span>
+      </div>
+      ${cards}
+    `;
+  },
+
+  /**
+   * 一键复制
+   * @param {string} id
+   */
+  async copyText(id) {
+    const item = this.currentResults.find(r => r.id === id);
+    if (!item) {
+      // 从收藏中查找
+      const favItem = StorageManager.getAll().find(i => i.id === id);
+      if (!favItem) return;
+      await this.doCopy(favItem.text, id);
+      return;
+    }
+    await this.doCopy(item.text, id);
+  },
+
+  async doCopy(text, id) {
+    try {
+      await navigator.clipboard.writeText(text);
+      // 更新按钮状态
+      const btn = document.querySelector(`.copy-btn[data-id="${id}"]`);
+      if (btn) {
+        btn.textContent = '✅ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 一键复制';
+          btn.classList.remove('copied');
+        }, 2000);
+      }
+      showToast('已复制到剪贴板 ✓', 'success');
+    } catch (err) {
+      // 降级方案
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('已复制到剪贴板 ✓', 'success');
+    }
+  },
+
+  /**
+   * 切换收藏状态
+   * @param {string} id
+   */
+  toggleFavorite(id) {
+    // 查找 item
+    let item = this.currentResults.find(r => r.id === id);
+    if (!item) {
+      item = StorageManager.getAll().find(i => i.id === id);
+    }
+    if (!item) return;
+
+    const isFav = StorageManager.isFavorited(id);
+
+    if (isFav) {
+      StorageManager.remove(id);
+      showToast('已取消收藏', 'warning');
+    } else {
+      StorageManager.add({ ...item, timestamp: Date.now() });
+      showToast('已加入收藏 ★', 'success');
+    }
+
+    this.updateFavCount();
+    // 更新当前页面的按钮
+    this.refreshFavButtons();
+
+    // 如果在收藏页，刷新列表
+    if (this.currentTab === 'favorites') {
+      this.renderFavoritesTab();
+    }
+  },
+
+  /**
+   * 刷新收藏按钮状态
+   */
+  refreshFavButtons() {
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+      const id = btn.dataset.id;
+      const isFav = StorageManager.isFavorited(id);
+      btn.textContent = isFav ? '★ 已收藏' : '☆ 收藏';
+      if (isFav) {
+        btn.classList.add('favorited');
+      } else {
+        btn.classList.remove('favorited');
+      }
+    });
+  },
+
+  /**
+   * 渲染收藏标签页
+   */
+  renderFavoritesTab() {
+    const container = document.getElementById('resultsContainer');
+    const items = StorageManager.filterByMode(this.favFilter);
+
+    this.updateFavCount();
+
+    if (!items.length) {
+      container.innerHTML = `
+        <div class="filter-bar">
+          ${this.buildFilterBar()}
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">📌</div>
+          <p>还没有收藏任何文案</p>
+          <p class="hint">去 Emo 或 积极治愈 板块生成并收藏你喜欢的文案吧 ✨</p>
+        </div>`;
+      return;
+    }
+
+    const cards = items.map(item => {
+      const isEmo = item.config.mode === MODE_EMO;
+      const lengthLabel = LENGTH_MAP[item.config.length]?.label || '中等';
+      const emotionLabel = getEmotionLabel(
+        item.config.emotion === 'light' ? 20 : item.config.emotion === 'intense' ? 80 : 50
+      );
+
+      return `
+        <div class="copy-card ${isEmo ? 'emo-card' : 'positive-card'}">
+          <span class="card-mode-label ${isEmo ? 'emo-label' : 'positive-label'}">${isEmo ? 'Emo' : '治愈'}</span>
+          <div class="card-text">${escapeHtml(item.text)}</div>
+          <div class="card-tags">
+            <span class="card-tag" onclick="app.restoreConfig('${item.id}')" title="点击回填生成参数">
+              🔑 ${escapeHtml(item.config.keyword || '随机场景')}
+            </span>
+            <span class="card-tag" onclick="app.restoreConfig('${item.id}')" title="点击回填生成参数">
+              📏 ${lengthLabel}
+            </span>
+            <span class="card-tag" onclick="app.restoreConfig('${item.id}')" title="点击回填生成参数">
+              🎚️ ${emotionLabel.split('，')[0]}
+            </span>
+            <span class="card-tag" style="font-size:10px;color:var(--text-muted);cursor:default;">
+              ${new Date(item.timestamp).toLocaleDateString('zh-CN')}
+            </span>
+          </div>
+          <div class="card-actions">
+            <button class="copy-btn" data-id="${item.id}" onclick="app.copyText('${item.id}')">
+              📋 复制
+            </button>
+            <button class="fav-btn favorited" data-id="${item.id}" onclick="app.toggleFavorite('${item.id}')">
+              ★ 取消收藏
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="results-header">
+        <h3>📌 我的收藏语录</h3>
+        <span class="results-count">共 ${items.length} 条</span>
+      </div>
+      <div class="filter-bar">
+        ${this.buildFilterBar()}
+      </div>
+      ${cards}
+    `;
+  },
+
+  /**
+   * 构建筛选栏
+   */
+  buildFilterBar() {
+    const filters = [
+      { value: 'all', label: '全部' },
+      { value: MODE_EMO, label: '🌙 Emo 伤感' },
+      { value: MODE_POSITIVE, label: '☀️ 积极治愈' },
+    ];
+    return filters.map(f => `
+      <button class="filter-btn ${this.favFilter === f.value ? 'active' : ''}"
+              onclick="app.setFavFilter('${f.value}')">
+        ${f.label}
+      </button>
+    `).join('');
+  },
+
+  /**
+   * 设置收藏筛选
+   * @param {string} filter
+   */
+  setFavFilter(filter) {
+    this.favFilter = filter;
+    this.renderFavoritesTab();
+  },
+
+  /**
+   * 回填配置参数（从收藏标签点击）
+   * @param {string} id
+   */
+  restoreConfig(id) {
+    const item = StorageManager.getAll().find(i => i.id === id);
+    if (!item) return;
+
+    const config = item.config;
+
+    // 切换到对应板块
+    const targetTab = config.mode === MODE_EMO ? 'emo' : 'positive';
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    const tabEl = document.querySelector(`.nav-tab[data-tab="${targetTab}"]`);
+    if (tabEl) tabEl.classList.add('active');
+
+    // 回填参数
+    document.getElementById('keyword').value = config.keyword || '';
+    document.getElementById('textLength').value = config.length || 'medium';
+
+    // 回填情绪滑块
+    const emotionMap = { light: 20, medium: 50, intense: 80 };
+    document.getElementById('emotion').value = emotionMap[config.emotion] || 50;
+
+    // 切换到对应面板
+    this.currentTab = targetTab;
+    const configPanel = document.getElementById('configPanel');
+    configPanel.classList.remove('collapsed');
+    document.getElementById('btnGenerate').style.display = '';
+    document.getElementById('currentModeLabel').textContent =
+      targetTab === 'emo' ? '当前模式：Emo 伤感' : '当前模式：积极治愈';
+
+    const btnGenerate = document.getElementById('btnGenerate');
+    btnGenerate.classList.remove('emo-mode', 'positive-mode');
+    btnGenerate.classList.add(targetTab === 'emo' ? 'emo-mode' : 'positive-mode');
+    btnGenerate.textContent = '✨ 生成文案';
+
+    // 更新预览
+    this.updatePromptPreview();
+
+    // 清空结果区
+    this.currentResults = [];
+    document.getElementById('resultsContainer').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔄</div>
+        <p>参数已回填 — 关键词「${escapeHtml(config.keyword || '随机场景')}」</p>
+        <p class="hint">点击生成按钮，复刻同款风格文案</p>
+      </div>`;
+
+    showToast('参数已回填！点击生成复刻同款风格 ✨', 'success');
+  },
+
+  /**
+   * 渲染 Emo 标签页（初始状态）
+   */
+  renderEmoTab() {
+    // 默认展示空状态
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🌙</div>
+        <p>输入关键词，点击生成<br>AI 将为你创作 Emo 伤感文案</p>
+        <p class="hint">克制留白 · 氛围感短句 · 适配朋友圈 & 个性签名</p>
+      </div>`;
+  },
+
+  /**
+   * 更新收藏计数徽章
+   */
+  updateFavCount() {
+    const count = StorageManager.count();
+    document.getElementById('favCount').textContent = count;
+  },
+};
+
+// ==================== 工具函数 ====================
+
+/** 生成唯一 ID */
+function generateId() {
+  return 'cp_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+}
+
+/** HTML 转义 */
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/** 显示 Toast 通知 */
+function showToast(message, type = '') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  // 2.5 秒后自动移除
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.remove();
+    }
+  }, 2500);
+
+  // 限制同时显示的 toast 数量
+  const toasts = container.querySelectorAll('.toast');
+  if (toasts.length > 3) {
+    toasts[0].remove();
+  }
+}
+
+// ==================== 键盘快捷键 ====================
+document.addEventListener('keydown', (e) => {
+  // Ctrl+Enter 生成文案
+  if (e.ctrlKey && e.key === 'Enter') {
+    e.preventDefault();
+    if (app.currentTab !== 'favorites') {
+      app.generate();
+    }
+  }
+});
+
+// ==================== 启动应用 ====================
+document.addEventListener('DOMContentLoaded', () => {
+  app.init();
+});
+</script>
+
+</body>
+</html>
