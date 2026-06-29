@@ -17,18 +17,19 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: jekyll/jekyll:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
-        run: |
-          chmod -R 777 .
-          jekyll build --baseurl "${{ steps.pages.outputs.base_path }}" --destination ./_site
+        run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}" --destination ./_site
         env:
           JEKYLL_ENV: production
       - name: Upload artifact
